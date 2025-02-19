@@ -1,0 +1,149 @@
+/*
+ * Copyright (c) 2024 Blecon Ltd
+ * SPDX-License-Identifier: Closed
+ */
+
+/dts-v1/;
+#include <nordic/nrf52833_qdaa.dtsi>
+#include "kkm_k7p-pinctrl.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "KKM K7P";
+	compatible = "kkm,kkm-k7p";
+
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,uart-mcumgr = &uart0;
+		zephyr,bt-mon-uart = &uart0;
+		zephyr,bt-c2h-uart = &uart0;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_partition;
+		zephyr,ieee802154 = &ieee802154;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+			label = "Red LED";
+		};
+	};
+
+	pwmleds {
+		compatible = "pwm-leds";
+		pwm_led0: pwm_led_0 {
+			pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+		button0: button_0 {
+			gpios = <&gpio0 2 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Push button switch";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	zephyr,user {
+		io-channels = <&adc 3>;
+	};
+
+	/* These aliases are provided for compatibility with samples */
+	aliases {
+		led0 = &led0;
+		pwm-led0 = &pwm_led0;
+		sw0 = &button0;
+		watchdog0 = &wdt0;
+	};
+};
+
+&adc {
+	status = "okay";
+};
+
+&uicr {
+	gpio-as-nreset;
+};
+
+&gpiote {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+	gpio-reserved-ranges = <0 2>, <6 1>, <8 1>, <17 7>;
+	gpio-line-names = "XL1", "XL2", "LED", "KEY", "", "VBAT", "",
+		"", "", "", "", "", "", "",
+		"", "", "", "", "RESET", "",
+		"", "", "", "","",
+		"", "", "", "SDA", "SCL", "INT1", "INT2";
+};
+
+&gpio1 {
+	status = "okay";
+	gpio-line-names = "", "", "", "", "", "", "", "",
+		"", "", "", "", "", "", "", "";
+};
+
+&uart0 {
+	compatible = "nordic,nrf-uarte";
+	status = "disabled";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-1 = <&uart0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&i2c0 {
+	compatible = "nordic,nrf-twi";
+	status = "okay";
+	pinctrl-0 = <&i2c0_default>;
+	pinctrl-1 = <&i2c0_sleep>;
+	pinctrl-names = "default", "sleep";
+	clock-frequency = <I2C_BITRATE_FAST>;
+
+	lis2dh: lis2dh@18 {
+		compatible = "st,lis2dh12", "st,lis2dh";
+		reg = <0x18>;
+		irq-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>, <&gpio0 31 GPIO_ACTIVE_HIGH>;
+		int1-gpio-config = <1>;
+		int2-gpio-config = <1>;
+		status = "okay";
+	};
+};
+
+&pwm0 {
+	status = "okay";
+	pinctrl-0 = <&pwm0_default>;
+	pinctrl-1 = <&pwm0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 0xC000>;
+		};
+		slot0_partition: partition@c000 {
+			label = "image-0";
+			reg = <0x0000C000 0x37000>;
+		};
+		slot1_partition: partition@43000 {
+			label = "image-1";
+			reg = <0x00043000 0x37000>;
+		};
+		storage_partition: partition@7a000 {
+			label = "storage";
+			reg = <0x0007A000 0x00006000>;
+		};
+	};
+};

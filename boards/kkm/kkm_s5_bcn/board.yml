@@ -1,0 +1,5 @@
+board:
+  name: kkm_s5_bcn
+  vendor: kkm
+  socs:
+  - name: nrf52833

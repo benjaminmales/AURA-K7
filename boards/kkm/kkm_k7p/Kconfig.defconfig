@@ -1,0 +1,11 @@
+# KKM S5 BCN board configuration
+
+# Copyright (c) 2024 Blecon Ltd.
+# SPDX-License-Identifier: Closed
+
+if BOARD_KKM_K7P
+
+config BT_CTLR
+	default BT
+
+endif # BOARD_KKM_K7P

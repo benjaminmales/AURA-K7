@@ -1,0 +1,3 @@
+config BLECON_APP_VERSION
+    int "Blecon App version"
+    default 0

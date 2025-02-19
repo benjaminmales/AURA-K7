@@ -1,0 +1,2 @@
+config BOARD_KKM_S5_BCN
+    select SOC_NRF52833_QIAA
